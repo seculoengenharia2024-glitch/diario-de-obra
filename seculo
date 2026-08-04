@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diário de Obra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#E7ECEF; --paper:#FDFCF9; --ink:#20262A; --navy:#16303F; --navySoft:#2C5266;
+    --amber:#F0A202; --amberDeep:#C97F00; --moss:#4B7355; --line:#C7CDBF; --danger:#B23A2F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;padding-bottom:76px;}
+  h1,h2,.display{font-family:'Big Shoulders Display',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  header{background:var(--navy);color:#fff;padding:18px 16px 12px;}
+  header .title{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  header .title h1{font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin:0;}
+  select#obraSelect{width:100%;padding:10px;border-radius:6px;background:var(--navySoft);color:#fff;border:none;font-size:14px;}
+  .obra-empty{color:var(--amber);font-size:14px;}
+
+  main{padding:16px;max-width:760px;margin:0 auto;}
+
+  .section{background:var(--paper);border:1px solid var(--line);border-radius:6px;margin-bottom:16px;overflow:hidden;}
+  .section-head{display:flex;align-items:center;justify-content:space-between;background:var(--navy);color:#fff;padding:9px 12px;}
+  .section-head span.label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-family:'Big Shoulders Display',sans-serif;}
+  .section-body{padding:12px;}
+
+  label.field{display:block;margin-bottom:12px;}
+  label.field .lbl{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--navySoft);margin-bottom:4px;}
+  input,select,textarea{width:100%;padding:8px;border-radius:4px;border:1px solid var(--line);font-size:14px;font-family:inherit;outline:none;background:#fff;}
+  textarea{resize:vertical;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+  .row-item{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+  .row-item input{flex:1;min-width:0;}
+  .row-item button{flex-shrink:0;background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer;padding:6px;}
+  .btn-add{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--navy);border:1px dashed var(--navySoft);background:none;border-radius:4px;padding:6px 10px;cursor:pointer;}
+
+  .btn-primary{width:100%;padding:13px;border:none;border-radius:6px;font-weight:700;font-size:14px;background:var(--amber);color:var(--ink);cursor:pointer;}
+  .btn-outline{width:100%;padding:10px;border:1px solid var(--navy);border-radius:6px;font-weight:600;font-size:13px;background:none;color:var(--navy);cursor:pointer;}
+
+  .hist-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);}
+  .hist-item:last-child{border-bottom:none;}
+  .hist-item .t1{font-size:14px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+  .hist-item .t2{font-size:12px;color:var(--navySoft);}
+  .hist-actions{display:flex;gap:8px;flex-shrink:0;}
+  .hist-actions button{background:none;border:none;cursor:pointer;font-size:16px;}
+
+  .med-card{border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:10px;}
+  .med-pct{font-size:12px;font-weight:600;color:var(--moss);margin-top:6px;}
+
+  nav.bottom{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:var(--paper);border-top:1px solid var(--line);padding:8px 0;box-shadow:0 -2px 8px rgba(0,0,0,.15);}
+  nav.bottom button{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--navySoft);font-size:10px;font-weight:600;cursor:pointer;padding:4px 8px;}
+  nav.bottom button.active{color:var(--amberDeep);}
+  nav.bottom button .ic{font-size:18px;}
+
+  .flash{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--moss);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;z-index:99;display:none;}
+
+  .print-sheet{background:#fff;border:1px solid var(--ink);max-width:760px;margin:0 auto 24px;font-size:14px;}
+  .ps-head{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:2px solid var(--ink);}
+  .ps-head .num{text-align:right;font-family:'IBM Plex Mono',monospace;}
+  .ps-head .num .big{font-size:24px;font-weight:700;color:var(--amberDeep);}
+  .ps-info{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;}
+  .ps-block{padding:8px 16px;border-bottom:1px solid var(--line);}
+  .ps-block .t{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--navySoft);margin-bottom:4px;}
+  .ps-block table{width:100%;font-size:12px;border-collapse:collapse;}
+  .ps-block td,.ps-block th{padding:2px 8px 2px 0;text-align:left;}
+  .ps-sign{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:28px 16px;font-size:12px;text-align:center;}
+  .ps-sign .line{border-top:1px solid var(--ink);margin-top:28px;padding-top:4px;}
+
+  .config-warning{background:#FFF3CD;border:1px solid #E0A800;color:#5c4600;padding:10px 12px;border-radius:6px;font-size:13px;margin-bottom:16px;}
+
+  @media print{
+    header,nav.bottom,.no-print{display:none !important;}
+    body{background:#fff;padding-bottom:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="flash no-print" id="flash">Salvo</div>
+
+<header class="no-print">
+  <div class="title"><span style="font-size:20px;">🦺</span><h1>Diário de Obra</h1></div>
+  <div id="obraSelectorWrap"></div>
+</header>
+
+<main id="app"></main>
+
+<nav class="bottom no-print" id="bottomNav">
+  <button data-tab="lancar"><span class="ic">📋</span>Lançar</button>
+  <button data-tab="historico"><span class="ic">🗂️</span>Histórico</button>
+  <button data-tab="medicao"><span class="ic">📐</span>Medição</button>
+  <button data-tab="obras"><span class="ic">🏗️</span>Obras</button>
+</nav>
+
+<script>
+/* =========================================================
+   CONFIGURAÇÃO — cole aqui a URL do seu Web App (Apps Script)
+   Extensões > Apps Script > Implantar > Novo aplicativo da Web
+   ========================================================= */
+const SCRIPT_URL = https://script.google.com/macros/s/AKfycbx_7iUtaKTebzOErWakIJg-B72D3A7jodLVBwJogdrdkkBl2ILnCQGeR9tWLRG0zUNkCA/exec;
+
+// ---------- estado ----------
+let state = { obras: [], rdos: [], medicoes: [], obraId: null, tab: "lancar" };
+let rdoForm = null;
+let medicaoForm = null;
+let historicoMes = todayStr().slice(0,7);
+let printTarget = null;
+
+// ---------- helpers de data ----------
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function fmtDateBR(iso){ if(!iso) return ""; const [y,m,d]=iso.split("-"); return `${d}/${m}/${y}`; }
+function monthLabel(iso){ const [y,m]=iso.split("-"); const meses=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]; return `${meses[parseInt(m,10)-1]}/${y}`; }
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+function emptyRdo(obraId){
+  return { id:uid(), obraId, data:todayStr(), climaManha:"Bom", climaTarde:"Bom", condicao:"Praticável",
+    maoDeObra:[], equipamentos:[], materiais:[], atividades:"", ocorrencias:"", observacoes:"", criadoEm:new Date().toISOString() };
+}
+const CLIMA_OPCOES = ["Bom","Nublado","Chuva","Chuva forte"];
+
+// ---------- API ----------
+async function apiLoad(){
+  const res = await fetch(SCRIPT_URL);
+  return res.json();
+}
+async function apiPost(action, payload){
+  const res = await fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita preflight CORS
+    body: JSON.stringify(Object.assign({ action }, payload))
+  });
+  return res.json();
+}
+
+function flashSaved(){
+  const el = document.getElementById("flash");
+  el.style.display = "block";
+  setTimeout(()=> el.style.display = "none", 1600);
+}
+
+// ---------- carregamento ----------
+async function init(){
+  document.getElementById("app").innerHTML = "<p style='padding:20px;color:var(--navySoft)'>Carregando…</p>";
+  if(!SCRIPT_URL || SCRIPT_URL.indexOf("COLE_AQUI") >= 0){
+    document.getElementById("app").innerHTML =
+      "<div class='config-warning'>⚠️ Configure a variável <b>SCRIPT_URL</b> no topo do index.html com a URL do seu Apps Script antes de usar.</div>";
+    return;
+  }
+  try{
+    const data = await apiLoad();
+    state.obras = data.obras || [];
+    state.rdos = data.rdos || [];
+    state.medicoes = data.medicoes || [];
+    if(state.obras.length > 0) state.obraId = state.obras[0].id;
+    rdoForm = state.obraId ? emptyRdo(state.obraId) : null;
+    medicaoForm = state.obraId ? { id:uid(), obraId:state.obraId, mes:todayStr().slice(0,7), servicos:[] } : null;
+    render();
+  }catch(err){
+    document.getElementById("app").innerHTML =
+      "<div class='config-warning'>Não foi possível carregar os dados. Verifique a URL do Apps Script e se a implantação está pública. Detalhe: "+err+"</div>";
+  }
+}
+
+// ---------- ações ----------
+async function addObra(nome, prefeitura, contratoNumero){
+  if(!nome.trim()) return;
+  const obra = { id: uid(), nome, prefeitura, contratoNumero };
+  state.obras.push(obra);
+  state.obraId = obra.id;
+  rdoForm = emptyRdo(obra.id);
+  medicaoForm = { id:uid(), obraId:obra.id, mes:todayStr().slice(0,7), servicos:[] };
+  state.tab = "lancar";
+  render();
+  await apiPost("saveObra", { data: obra });
+  flashSaved();
+}
+async function removeObra(id){
+  if(!confirm("Remover esta obra? Os RDOs e medições associados continuarão salvos na planilha, mas não aparecerão mais aqui.")) return;
+  state.obras = state.obras.filter(o=>o.id!==id);
+  if(state.obraId === id) state.obraId = state.obras[0]?.id || null;
+  render();
+  await apiPost("deleteObra", { id });
+}
+
+async function salvarRdo(){
+  if(!rdoForm) return;
+  const idx = state.rdos.findIndex(r=>r.obraId===rdoForm.obraId && r.data===rdoForm.data);
+  if(idx>=0) state.rdos[idx] = Object.assign({}, rdoForm, { id: state.rdos[idx].id });
+  else state.rdos.push(rdoForm);
+  const toSave = state.rdos.find(r=>r.obraId===rdoForm.obraId && r.data===rdoForm.data);
+  await apiPost("saveRdo", { data: toSave });
+  flashSaved();
+  rdoForm = emptyRdo(state.obraId);
+  render();
+}
+function carregarRdoExistente(data){
+  const found = state.rdos.find(r=>r.obraId===state.obraId && r.data===data);
+  rdoForm = found ? Object.assign({}, found) : emptyRdo(state.obraId);
+}
+async function removeRdo(id){
+  if(!confirm("Excluir este RDO?")) return;
+  state.rdos = state.rdos.filter(r=>r.id!==id);
+  render();
+  await apiPost("deleteRdo", { id });
+}
+
+async function salvarMedicao(){
+  if(!medicaoForm) return;
+  const idx = state.medicoes.findIndex(m=>m.obraId===medicaoForm.obraId && m.mes===medicaoForm.mes);
+  if(idx>=0) state.medicoes[idx] = Object.assign({}, medicaoForm, { id: state.medicoes[idx].id });
+  else state.medicoes.push(medicaoForm);
+  const toSave = state.medicoes.find(m=>m.obraId===medicaoForm.obraId && m.mes===medicaoForm.mes);
+  await apiPost("saveMedicao", { data: toSave });
+  flashSaved();
+}
+function carregarMedicao(mes){
+  const found = state.medicoes.find(m=>m.obraId===state.obraId && m.mes===mes);
+  medicaoForm = found ? Object.assign({}, found) : { id:uid(), obraId:state.obraId, mes, servicos:[] };
+}
+
+// ---------- render ----------
+function render(){
+  renderHeader();
+  renderNav();
+  const app = document.getElementById("app");
+  const obraAtual = state.obras.find(o=>o.id===state.obraId);
+
+  if(state.tab === "obras") return app.innerHTML = renderObrasTab();
+  if(!obraAtual){
+    app.innerHTML = "<p style='padding:20px;color:var(--navySoft)'>Cadastre uma obra na aba <b>Obras</b> para começar.</p>";
+    return;
+  }
+  if(state.tab === "lancar") app.innerHTML = renderLancarTab(obraAtual);
+  else if(state.tab === "historico") app.innerHTML = renderHistoricoTab(obraAtual);
+  else if(state.tab === "medicao") app.innerHTML = renderMedicaoTab(obraAtual);
+  else if(state.tab === "imprimir") app.innerHTML = renderImprimirTab(obraAtual);
+
+  attachHandlers();
+}
+
+function renderHeader(){
+  const wrap = document.getElementById("obraSelectorWrap");
+  if(state.obras.length===0){ wrap.innerHTML = "<p class='obra-empty'>Cadastre uma obra para começar →</p>"; return; }
+  wrap.innerHTML = `<select id="obraSelect">${state.obras.map(o=>`<option value="${o.id}" ${o.id===state.obraId?"selected":""}>${escapeHtml(o.nome)}</option>`).join("")}</select>`;
+  document.getElementById("obraSelect").onchange = (e)=>{
+    state.obraId = e.target.value;
+    rdoForm = emptyRdo(state.obraId);
+    medicaoForm = { id:uid(), obraId:state.obraId, mes:todayStr().slice(0,7), servicos:[] };
+    render();
+  };
+}
+function renderNav(){
+  document.querySelectorAll("#bottomNav button").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.tab===state.tab);
+    btn.onclick = ()=>{ state.tab = btn.dataset.tab; render(); };
+  });
+}
+
+function escapeHtml(s){ return String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function sectionWrap(icon, title, bodyHtml, rightHtml){
+  return `<div class="section"><div class="section-head"><span class="label">${icon} ${title}</span><span>${rightHtml||""}</span></div><div class="section-body">${bodyHtml}</div></div>`;
+}
+
+function rowListHtml(rows, prefix, cols){
+  let html = "";
+  if(rows.length===0) html += `<p style="font-size:12px;font-style:italic;color:var(--navySoft)">Nenhum item lançado.</p>`;
+  rows.forEach((row,idx)=>{
+    html += `<div class="row-item" data-list="${prefix}" data-idx="${idx}">`;
+    cols.forEach(c=>{
+      html += `<input data-key="${c.key}" type="${c.type||'text'}" placeholder="${c.label}" value="${escapeHtml(row[c.key]||'')}">`;
+    });
+    html += `<button data-remove="${prefix}" data-idx="${idx}">✕</button></div>`;
+  });
+  html += `<button class="btn-add" data-addrow="${prefix}">+ Adicionar</button>`;
+  return html;
+}
+
+function renderLancarTab(obra){
+  return `
+  ${sectionWrap("📋","RDO · "+escapeHtml(obra.nome), `
+    <label class="field"><span class="lbl">Data</span><input id="f_data" type="date" value="${rdoForm.data}"></label>
+    <div class="grid2">
+      <label class="field"><span class="lbl">Clima manhã</span><select id="f_climaManha">${CLIMA_OPCOES.map(o=>`<option ${o===rdoForm.climaManha?"selected":""}>${o}</option>`).join("")}</select></label>
+      <label class="field"><span class="lbl">Clima tarde</span><select id="f_climaTarde">${CLIMA_OPCOES.map(o=>`<option ${o===rdoForm.climaTarde?"selected":""}>${o}</option>`).join("")}</select></label>
+    </div>
+    <label class="field"><span class="lbl">Condição de trabalho</span>
+      <select id="f_condicao">${["Praticável","Parcialmente praticável","Impraticável"].map(o=>`<option ${o===rdoForm.condicao?"selected":""}>${o}</option>`).join("")}</select>
+    </label>
+  `, `<span class="mono" style="font-size:10px;color:var(--amber)">${fmtDateBR(rdoForm.data)}</span>`)}
+
+  ${sectionWrap("👷","Mão de obra", rowListHtml(rdoForm.maoDeObra,"maoDeObra",[{key:"funcao",label:"Função"},{key:"qtd",label:"Qtd",type:"number"}]))}
+  ${sectionWrap("🚚","Equipamentos", rowListHtml(rdoForm.equipamentos,"equipamentos",[{key:"nome",label:"Equipamento"},{key:"horas",label:"Horas",type:"number"}]))}
+  ${sectionWrap("📦","Materiais recebidos", rowListHtml(rdoForm.materiais,"materiais",[{key:"item",label:"Material"},{key:"qtd",label:"Qtd"},{key:"unidade",label:"Un."}]))}
+
+  ${sectionWrap("📝","Atividades executadas", `<textarea id="f_atividades" rows="4" placeholder="Descreva os serviços executados no dia...">${escapeHtml(rdoForm.atividades)}</textarea>`)}
+  ${sectionWrap("⚠️","Ocorrências", `<textarea id="f_ocorrencias" rows="3" placeholder="Paralisações, acidentes, visitas de fiscalização, pendências...">${escapeHtml(rdoForm.ocorrencias)}</textarea>`)}
+  ${sectionWrap("🖼️","Observações / fotos", `<p style="font-size:11px;color:var(--navySoft);margin:0 0 8px">Este site não armazena arquivos de imagem — descreva aqui o que as fotos mostram.</p><textarea id="f_observacoes" rows="3" placeholder="Descrição das fotos e observações gerais...">${escapeHtml(rdoForm.observacoes)}</textarea>`)}
+
+  <button class="btn-primary" id="btnSalvarRdo">💾 Salvar RDO do dia</button>
+  `;
+}
+
+function renderHistoricoTab(obra){
+  const rdosObra = state.rdos.filter(r=>r.obraId===state.obraId).sort((a,b)=>a.data.localeCompare(b.data));
+  const rdosMes = rdosObra.filter(r=>r.data.slice(0,7)===historicoMes);
+  const numero = (r)=> String(rdosObra.findIndex(x=>x.id===r.id)+1).padStart(3,"0");
+  let items = rdosMes.length===0
+    ? `<p style="font-size:14px;font-style:italic;color:var(--navySoft)">Nenhum RDO lançado em ${monthLabel(historicoMes+"-01")}.</p>`
+    : rdosMes.map(r=>`
+      <div class="hist-item">
+        <div>
+          <div class="t1">RDO ${numero(r)} — ${fmtDateBR(r.data)}</div>
+          <div class="t2">${r.condicao} · ${r.maoDeObra.length} funções · ${r.atividades ? escapeHtml(r.atividades.slice(0,40))+(r.atividades.length>40?"…":"") : "sem atividades registradas"}</div>
+        </div>
+        <div class="hist-actions">
+          <button data-print="${r.id}">🖨️</button>
+          <button data-delrdo="${r.id}" style="color:var(--danger)">🗑️</button>
+        </div>
+      </div>`).join("");
+  return sectionWrap("🗂️","Histórico · "+escapeHtml(obra.nome), items + (rdosMes.length>0 ? `<button class="btn-outline" id="btnPrintMes" style="margin-top:12px">🖨️ Imprimir mês completo</button>` : ""),
+    `<input type="month" id="histMes" value="${historicoMes}" style="font-size:12px;width:auto;padding:2px 4px">`);
+}
+
+function renderMedicaoTab(obra){
+  let items = medicaoForm.servicos.map((s,idx)=>{
+    const pct = (s.qtdContratada && s.qtdAcumulada) ? ((parseFloat(s.qtdAcumulada)/parseFloat(s.qtdContratada))*100 || 0).toFixed(1) : null;
+    return `<div class="med-card" data-medidx="${idx}">
+      <div class="row-item">
+        <input data-mkey="item" placeholder="Serviço (ex: Alvenaria de vedação)" value="${escapeHtml(s.item||'')}">
+        <button data-delmed="${idx}">✕</button>
+      </div>
+      <div class="grid2" style="grid-template-columns:1fr 1fr 1fr;">
+        <input data-mkey="unidade" placeholder="Unidade" value="${escapeHtml(s.unidade||'')}" class="mono">
+        <input data-mkey="qtdContratada" placeholder="Qtd contratada" value="${escapeHtml(s.qtdContratada||'')}" class="mono">
+        <input data-mkey="qtdAcumulada" placeholder="Qtd acumulada" value="${escapeHtml(s.qtdAcumulada||'')}" class="mono">
+      </div>
+      ${pct?`<div class="med-pct">${pct}% executado</div>`:""}
+    </div>`;
+  }).join("");
+  return sectionWrap("📐","Medição · "+escapeHtml(obra.nome), `
+    <p style="font-size:11px;color:var(--navySoft);margin:0 0 12px">Lance os serviços medidos neste mês, com a quantidade acumulada executada até o momento.</p>
+    ${items}
+    <button class="btn-add" id="btnAddServico" style="margin-bottom:12px">+ Adicionar serviço</button>
+    <button class="btn-primary" id="btnSalvarMedicao">💾 Salvar medição de ${monthLabel(medicaoForm.mes+"-01")}</button>
+  `, `<input type="month" id="medMes" value="${medicaoForm.mes}" style="font-size:12px;width:auto;padding:2px 4px">`);
+}
+
+function renderImprimirTab(obra){
+  const rdosObra = state.rdos.filter(r=>r.obraId===state.obraId).sort((a,b)=>a.data.localeCompare(b.data));
+  const rdosMes = rdosObra.filter(r=>r.data.slice(0,7)===historicoMes);
+  const numero = (r)=> String(rdosObra.findIndex(x=>x.id===r.id)+1).padStart(3,"0");
+  const list = printTarget==="MES" ? rdosMes : rdosObra.filter(r=>r.id===printTarget);
+
+  const tableBlock = (title, rows, cols)=>{
+    let body = (!rows || rows.length===0) ? `<p style="font-size:12px;font-style:italic;color:var(--navySoft)">—</p>` :
+      `<table><thead><tr>${cols.map(c=>`<th>${c[1]}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td>${escapeHtml(r[c[0]])}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    return `<div class="ps-block"><div class="t">${title}</div>${body}</div>`;
+  };
+  const textBlock = (title, text)=> `<div class="ps-block"><div class="t">${title}</div><p style="font-size:14px;white-space:pre-wrap;margin:0">${escapeHtml(text)||"—"}</p></div>`;
+
+  const sheets = list.map(r=>`
+    <div class="print-sheet">
+      <div class="ps-head">
+        <div><div style="font-size:18px;font-weight:700;text-transform:uppercase;font-family:'Big Shoulders Display',sans-serif">Relatório Diário de Obra</div>
+        <div style="font-size:12px;color:var(--navySoft)">${escapeHtml(obra.prefeitura||"")}${obra.contratoNumero?" · Contrato "+escapeHtml(obra.contratoNumero):""}</div></div>
+        <div class="num"><div style="font-size:11px">RDO Nº</div><div class="big">${numero(r)}</div></div>
+      </div>
+      <div class="ps-info">
+        <p><b>Obra:</b> ${escapeHtml(obra.nome)}</p>
+        <p class="mono"><b>Data:</b> ${fmtDateBR(r.data)}</p>
+        <p><b>Clima manhã:</b> ${r.climaManha}</p>
+        <p><b>Clima tarde:</b> ${r.climaTarde}</p>
+        <p style="grid-column:1/3"><b>Condição de trabalho:</b> ${r.condicao}</p>
+      </div>
+      ${tableBlock("Mão de obra", r.maoDeObra, [["funcao","Função"],["qtd","Qtd"]])}
+      ${tableBlock("Equipamentos", r.equipamentos, [["nome","Equipamento"],["horas","Horas"]])}
+      ${tableBlock("Materiais recebidos", r.materiais, [["item","Material"],["qtd","Qtd"],["unidade","Unidade"]])}
+      ${textBlock("Atividades executadas", r.atividades)}
+      ${textBlock("Ocorrências", r.ocorrencias)}
+      ${textBlock("Observações / fotos", r.observacoes)}
+      <div class="ps-sign"><div class="line">Responsável técnico</div><div class="line">Fiscalização</div></div>
+    </div>`).join("");
+
+  return `<button class="btn-outline no-print" id="btnVoltar" style="margin-bottom:12px">← Voltar</button>
+    <button class="btn-primary no-print" id="btnPrint" style="margin-bottom:16px;background:var(--navy);color:#fff">🖨️ Imprimir / salvar PDF</button>
+    ${sheets}`;
+}
+
+function renderObrasTab(){
+  let list = state.obras.map(o=>`
+    <div class="hist-item">
+      <div><div class="t1" style="font-family:inherit">${escapeHtml(o.nome)}</div>
+      <div class="t2">${escapeHtml(o.prefeitura||"")} ${o.contratoNumero?" · Contrato "+escapeHtml(o.contratoNumero):""}</div></div>
+      <button data-delobra="${o.id}" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px">🗑️</button>
+    </div>`).join("");
+  return sectionWrap("🏗️","Obras cadastradas", `
+    ${list}
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">
+      <p style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--navySoft);margin:0 0 8px">Nova obra</p>
+      <label class="field"><span class="lbl">Nome da obra</span><input id="novaNome" placeholder="Ex: UBS Santa Terezinha"></label>
+      <label class="field"><span class="lbl">Prefeitura / contratante</span><input id="novaPrefeitura" placeholder="Ex: Prefeitura de Coronel Fabriciano"></label>
+      <label class="field"><span class="lbl">Nº do contrato</span><input id="novoContrato" placeholder="Ex: 045/2026"></label>
+      <button class="btn-primary" id="btnAddObra">+ Adicionar obra</button>
+    </div>
+  `);
+}
+
+// ---------- eventos após cada render ----------
+function attachHandlers(){
+  // LANÇAR
+  const fData = document.getElementById("f_data");
+  if(fData) fData.onchange = (e)=>{ rdoForm.data = e.target.value; carregarRdoExistente(e.target.value); render(); };
+  ["climaManha","climaTarde","condicao"].forEach(k=>{
+    const el = document.getElementById("f_"+k);
+    if(el) el.onchange = (e)=> rdoForm[k] = e.target.value;
+  });
+  ["atividades","ocorrencias","observacoes"].forEach(k=>{
+    const el = document.getElementById("f_"+k);
+    if(el) el.oninput = (e)=> rdoForm[k] = e.target.value;
+  });
+  document.querySelectorAll("[data-addrow]").forEach(btn=>{
+    btn.onclick = ()=>{ rdoForm[btn.dataset.addrow].push({}); render(); };
+  });
+  document.querySelectorAll("[data-remove]").forEach(btn=>{
+    btn.onclick = ()=>{ rdoForm[btn.dataset.remove].splice(parseInt(btn.dataset.idx),1); render(); };
+  });
+  document.querySelectorAll("[data-list]").forEach(rowEl=>{
+    rowEl.querySelectorAll("input[data-key]").forEach(inp=>{
+      inp.oninput = ()=>{ rdoForm[rowEl.dataset.list][parseInt(rowEl.dataset.idx)][inp.dataset.key] = inp.value; };
+    });
+  });
+  const btnSalvarRdo = document.getElementById("btnSalvarRdo");
+  if(btnSalvarRdo) btnSalvarRdo.onclick = salvarRdo;
+
+  // HISTÓRICO
+  const histMes = document.getElementById("histMes");
+  if(histMes) histMes.onchange = (e)=>{ historicoMes = e.target.value; render(); };
+  document.querySelectorAll("[data-print]").forEach(btn=>{
+    btn.onclick = ()=>{ printTarget = btn.dataset.print; state.tab = "imprimir"; render(); };
+  });
+  document.querySelectorAll("[data-delrdo]").forEach(btn=>{
+    btn.onclick = ()=> removeRdo(btn.dataset.delrdo);
+  });
+  const btnPrintMes = document.getElementById("btnPrintMes");
+  if(btnPrintMes) btnPrintMes.onclick = ()=>{ printTarget = "MES"; state.tab = "imprimir"; render(); };
+
+  // MEDIÇÃO
+  const medMes = document.getElementById("medMes");
+  if(medMes) medMes.onchange = (e)=>{ carregarMedicao(e.target.value); render(); };
+  const btnAddServico = document.getElementById("btnAddServico");
+  if(btnAddServico) btnAddServico.onclick = ()=>{ medicaoForm.servicos.push({}); render(); };
+  document.querySelectorAll("[data-delmed]").forEach(btn=>{
+    btn.onclick = ()=>{ medicaoForm.servicos.splice(parseInt(btn.dataset.delmed),1); render(); };
+  });
+  document.querySelectorAll(".med-card").forEach(card=>{
+    card.querySelectorAll("input[data-mkey]").forEach(inp=>{
+      inp.oninput = ()=>{ medicaoForm.servicos[parseInt(card.dataset.medidx)][inp.dataset.mkey] = inp.value; };
+      inp.onchange = ()=> render();
+    });
+  });
+  const btnSalvarMedicao = document.getElementById("btnSalvarMedicao");
+  if(btnSalvarMedicao) btnSalvarMedicao.onclick = salvarMedicao;
+
+  // IMPRIMIR
+  const btnVoltar = document.getElementById("btnVoltar");
+  if(btnVoltar) btnVoltar.onclick = ()=>{ state.tab = "historico"; render(); };
+  const btnPrint = document.getElementById("btnPrint");
+  if(btnPrint) btnPrint.onclick = ()=> window.print();
+
+  // OBRAS
+  const btnAddObra = document.getElementById("btnAddObra");
+  if(btnAddObra) btnAddObra.onclick = ()=>{
+    addObra(document.getElementById("novaNome").value, document.getElementById("novaPrefeitura").value, document.getElementById("novoContrato").value);
+  };
+  document.querySelectorAll("[data-delobra]").forEach(btn=>{
+    btn.onclick = ()=> removeObra(btn.dataset.delobra);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
